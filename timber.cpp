@@ -5,6 +5,58 @@
 
 using namespace std;
 
+const int NUM_BRANCHES = 6;
+
+enum class side {LEFT, RIGHT, NONE};
+vector<side> branchPositions (NUM_BRANCHES);
+
+void createSpriteForBranches(vector<sf::Sprite>& branches){
+    for(int i=0; i<NUM_BRANCHES; i++){
+        // Need to put them out of our window's resolution
+        branches[i].setPosition({-2000, -2000});
+        branches[i].setOrigin({220, 20});
+    }
+}
+
+void updateBranches(vector<sf::Sprite>& branches, vector<side>& branchPositions){
+    // Update the branches sprites
+    for(int i=0; i<NUM_BRANCHES; i++){
+        float height = i*150;
+        if(branchPositions[i] == side::LEFT){
+            // Move the sprite to the left side
+            branches[i].setPosition({610, height});
+            // Flip the sprite round the other way
+            branches[i].setRotation(sf::degrees(180));
+        }
+        else if(branchPositions[i] == side::RIGHT){
+            // Move the sprite to the right side
+            branches[i].setPosition({1330, height});
+            branches[i].setRotation(sf::degrees(0));
+        }
+        else branches[i].setPosition({3000, height});
+    }
+}
+
+void updateBranchPositions(int seed){
+    // Move all the branches down one place
+    srand((int)time(0) + seed);
+    for(int j=0; j<NUM_BRANCHES; j++){
+        int r = rand()%5;
+        switch(r){
+            case 0:
+                branchPositions[j] = side::LEFT;
+                break;
+            case 1:
+                branchPositions[j] = side::RIGHT;
+                break;
+            default:
+                branchPositions[j] = side::NONE;
+                break;
+        }
+    }
+};
+
+
 int main(){
     // Create a videomode object and render a window for the game.
     sf::RenderWindow window(sf::VideoMode({1920u, 1080u}), "Timber");
@@ -40,6 +92,12 @@ int main(){
     spriteCloud3.setPosition({0, 500});
     std::vector<sf::Sprite> cloudList {spriteCloud1, spriteCloud2, spriteCloud3};
     std::vector<pair<bool, float>> cloudInfoList (3, {false, 0.0f});
+
+    // prepare the branches.
+    sf::Texture textureBranch;
+    (void)textureBranch.loadFromFile("graphics/branch.png");
+    vector<sf::Sprite> branches (NUM_BRANCHES, sf::Sprite(textureBranch));
+    createSpriteForBranches(branches);
 
     // Track player's score.
     int score = 0;
@@ -86,6 +144,8 @@ int main(){
     bool paused = true;
 
     srand((int)time(0));
+
+    updateBranchPositions(rand()%10);
 
     // Create a main game loop
     while(window.isOpen()){
@@ -177,6 +237,8 @@ int main(){
             std::stringstream ss;
             ss<<"Score = "<<score;
             scoreText.setString(ss.str());
+
+            updateBranches(branches, branchPositions);
         }
 
        /*
@@ -191,9 +253,8 @@ int main(){
         window.draw(timeBar);
         for(int i=0; i<3; i++) window.draw(cloudList[i]);
         window.draw(scoreText);
-
+        for(int i=0; i<NUM_BRANCHES; i++) window.draw(branches[i]);
         if(paused) window.draw(messageText);
-
         window.display();
     }
 }
