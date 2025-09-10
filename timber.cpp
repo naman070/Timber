@@ -6,6 +6,8 @@
 using namespace std;
 
 const int NUM_BRANCHES = 6;
+const float AXE_POSITION_LEFT = 700;
+const float AXE_POSITION_RIGHT = 1075;
 
 enum class side {LEFT, RIGHT, NONE};
 vector<side> branchPositions (NUM_BRANCHES);
@@ -80,9 +82,6 @@ int main(){
     sf::Sprite spriteBee(textureBee);
     spriteBee.setPosition({0, 800});
 
-    bool beeActive = false;
-    float beeSpeed = 0.0f;
-
     // Create 3 sprite cloud sprites from 1 texture
     sf::Texture textureCloud;
     (void)textureCloud.loadFromFile("graphics/cloud.png");
@@ -98,6 +97,33 @@ int main(){
     (void)textureBranch.loadFromFile("graphics/branch.png");
     vector<sf::Sprite> branches (NUM_BRANCHES, sf::Sprite(textureBranch));
     createSpriteForBranches(branches);
+
+    // Prepare the player
+    sf::Texture texturePlayer;
+    (void)texturePlayer.loadFromFile("graphics/player.png");
+    sf::Sprite spritePlayer(texturePlayer);
+    spritePlayer.setPosition({580, 720});
+
+    // The player starts on the left
+    side playerSide = side::LEFT;
+
+    // Prepare the gravestone
+    sf::Texture textureGrave;
+    (void)textureGrave.loadFromFile("graphics/rip.png");
+    sf::Sprite spriteGrave(textureGrave);
+    spriteGrave.setPosition({600, 860});
+
+    // Prepare the axe
+    sf::Texture textureAxe;
+    (void)textureAxe.loadFromFile("graphics/axe.png");
+    sf::Sprite spriteAxe(textureAxe);
+    spriteAxe.setPosition({700, 830});
+
+    // Prepare the flying log
+    sf::Texture textureLog;
+    (void)textureLog.loadFromFile("graphics/log.png");
+    sf::Sprite spriteLog(textureLog);
+    spriteLog.setPosition({810, 720});
 
     // Track player's score.
     int score = 0;
@@ -141,7 +167,13 @@ int main(){
     float timeRemaining = 6.0f, timeBarWidthPerSecond = timeBarStartWidth/timeRemaining;
 
     // Track whether the game is running. Game will be paused when it is started.
-    bool paused = true;
+    bool paused = true, acceptInput = false;
+    bool beeActive = false;
+    float beeSpeed = 0.0f;
+
+    // Some other useful log related variables
+    bool logActive = false;
+    float logSpeedX = 1000, logSpeedY = -1500;
 
     srand((int)time(0));
 
@@ -154,6 +186,18 @@ int main(){
             HANDLE THE PLAYERS INPUT
             --------------------------------------------------
         */
+
+        while(auto event = window.pollEvent()){
+            if(event->is<sf::Event::KeyReleased>() && !paused){
+                // listen for the key input again.
+                acceptInput = true;
+
+                // hide the axe momentarily
+                spriteAxe.setPosition({2000, spriteAxe.getPosition().y});
+
+            }
+        }
+
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Escape)) window.close();
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Enter)){
             paused = false;
@@ -161,7 +205,62 @@ int main(){
             // Reset the timer and the score.
             score = 0;
             timeRemaining = 6;
+
+            // Update the branches sides to none so that they will move out of the screen
+            // once they are updated
+            for(int i=0; i<NUM_BRANCHES; i++) branchPositions[i] = side::NONE;
+
+            // Make sure the gravestone is hidden
+            spriteGrave.setPosition({675, 2000});
+
+            // Move the player into the position
+            spritePlayer.setPosition({580, 720});
+            acceptInput = true;
         }
+
+        if(acceptInput){
+            // First handle pressing the right cursor key.
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)){
+                // Make sure the player is on the right
+                playerSide = side::RIGHT;
+                score += 1;
+
+                // Add to the Amount of time remaining
+                timeRemaining += ((2/score) + .15);
+
+                spritePlayer.setPosition({1200, 720});
+                spriteAxe.setPosition({AXE_POSITION_RIGHT, spriteAxe.getPosition().y});
+                // Update branches
+                updateBranchPositions(score);
+
+                // You are hitting from the right, so set the flying log towards left
+                spriteLog.setPosition({810, 720});
+                logSpeedX = -5000;
+                logActive = true;
+                acceptInput = false;
+            }
+            else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)){
+                // Make sure the player is on the left
+                playerSide = side::LEFT;
+                score += 1;
+
+                // Add to the amount of time remaining
+                timeRemaining += ((2/score) + .15);
+
+                spritePlayer.setPosition({810, 720});
+                spriteAxe.setPosition({AXE_POSITION_LEFT, spriteAxe.getPosition().y});
+                // Update branches
+                updateBranchPositions(score);
+
+                // You are hitting from the left, so set the flying log towards the right
+                spriteLog.setPosition({780, 720});
+                logSpeedX = 5000;
+                logActive = true;
+                acceptInput = false;
+            }
+        }
+
+
 
         /*
             --------------------------------------------------
@@ -251,6 +350,10 @@ int main(){
         window.draw(spriteTree);
         window.draw(spriteBee);
         window.draw(timeBar);
+        window.draw(spritePlayer);
+        window.draw(spriteAxe);
+        window.draw(spriteGrave);
+        window.draw(spriteLog);
         for(int i=0; i<3; i++) window.draw(cloudList[i]);
         window.draw(scoreText);
         for(int i=0; i<NUM_BRANCHES; i++) window.draw(branches[i]);
