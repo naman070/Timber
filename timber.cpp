@@ -351,6 +351,29 @@ int main(){
                     spriteLog.setPosition({810, 720});
                 }
             }
+
+            // Has the player been squised by a branch??
+            if(branchPositions[NUM_BRANCHES-1] == playerSide){
+                // death, game will only start again when 'return' is pressed.
+                paused = true;
+                acceptInput = false;
+                
+                // Draw the gravestone
+                spriteGrave.setPosition({525, 760});
+
+                // hide the player
+                spritePlayer.setPosition({2000, 660});
+
+                // Change the text of the Message
+                messageText.setString("DEATH BY BRANCH!!");
+
+                // Center it on the screen
+                sf::FloatRect textRectDeath = messageText.getLocalBounds();
+                messageText.setOrigin(
+                    {textRectDeath.position.x + textRectDeath.size.x / 2.0f, textRectDeath.position.y + textRectDeath.size.y / 2.0f}
+                );
+                messageText.setPosition({1920/2.0f, 1080/2.0f});
+            }
         }
 
        /*
