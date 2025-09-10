@@ -41,20 +41,21 @@ void updateBranches(vector<sf::Sprite>& branches, vector<side>& branchPositions)
 
 void updateBranchPositions(int seed){
     // Move all the branches down one place
+    for(int j = NUM_BRANCHES-1; j > 0; j--) branchPositions[j] = branchPositions[j-1];
+
     srand((int)time(0) + seed);
-    for(int j=0; j<NUM_BRANCHES; j++){
-        int r = rand()%5;
-        switch(r){
-            case 0:
-                branchPositions[j] = side::LEFT;
-                break;
-            case 1:
-                branchPositions[j] = side::RIGHT;
-                break;
-            default:
-                branchPositions[j] = side::NONE;
-                break;
-        }
+    int r = rand()%5;
+    // Only top branch needs to be randomised.
+    switch(r){
+        case 0:
+            branchPositions[0] = side::LEFT;
+            break;
+        case 1:
+            branchPositions[0] = side::RIGHT;
+            break;
+        default:
+            branchPositions[0] = side::NONE;
+            break;
     }
 };
 
