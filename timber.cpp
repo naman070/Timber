@@ -58,7 +58,6 @@ void updateBranchPositions(int seed){
     }
 };
 
-
 int main(){
     // Create a videomode object and render a window for the game.
     sf::RenderWindow window(sf::VideoMode({1920u, 1080u}), "Timber");
@@ -247,13 +246,13 @@ int main(){
                 // Add to the amount of time remaining
                 timeRemaining += ((2/score) + .15);
 
-                spritePlayer.setPosition({810, 720});
+                spritePlayer.setPosition({580, 720});
                 spriteAxe.setPosition({AXE_POSITION_LEFT, spriteAxe.getPosition().y});
                 // Update branches
                 updateBranchPositions(score);
 
                 // You are hitting from the left, so set the flying log towards the right
-                spriteLog.setPosition({780, 720});
+                spriteLog.setPosition({810, 720});
                 logSpeedX = 5000;
                 logActive = true;
                 acceptInput = false;
@@ -338,6 +337,19 @@ int main(){
             scoreText.setString(ss.str());
 
             updateBranches(branches, branchPositions);
+
+            if(logActive){
+                spriteLog.setPosition({
+                    spriteLog.getPosition().x + (logSpeedX * dt.asSeconds()),
+                    spriteLog.getPosition().y + (logSpeedY * dt.asSeconds())
+                });
+
+                if(spriteLog.getPosition().x < -100 || spriteLog.getPosition().y > 2000){
+                    logActive = false;
+                    // Set it to initial position again.
+                    spriteLog.setPosition({810, 720});
+                }
+            }
         }
 
        /*
