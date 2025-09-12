@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Audio.hpp>
 #include <sstream>
 #include <bits/stdc++.h>
 
@@ -57,7 +58,20 @@ void updateBranchPositions(int seed){
             branchPositions[0] = side::NONE;
             break;
     }
+}
+
+struct soundObject{
+    unique_ptr<sf::SoundBuffer> buffer;
+    unique_ptr<sf::Sound> sound;
 };
+
+soundObject prepareSoundObject(string filePath){
+    soundObject result;
+    result.buffer = make_unique<sf::SoundBuffer>();
+    (void)result.buffer->loadFromFile(filePath);
+    result.sound = make_unique<sf::Sound>(*result.buffer);
+    return result;
+}
 
 int main(){
     // Create a videomode object and render a window for the game.
@@ -153,6 +167,11 @@ int main(){
     messageText.setPosition({1920/2.0f, 1080/2.0f});
     scoreText.setPosition({20, 20});
 
+    // Prepare the sounds
+    auto chop = prepareSoundObject("sound/chop.wav");
+    auto death = prepareSoundObject("sound/death.wav");
+    auto outOfTime = prepareSoundObject("sound/out_of_time.wav");
+
     // Variables to control the time itself (JEDI POWERS UNLOCKED)
     sf::Clock clock;
 
@@ -224,6 +243,8 @@ int main(){
                 // Make sure the player is on the right
                 playerSide = side::RIGHT;
                 score += 1;
+                // Play the sound
+                chop.sound->play();
 
                 // Add to the Amount of time remaining
                 timeRemaining += ((2/score) + .15);
@@ -244,6 +265,9 @@ int main(){
                 playerSide = side::LEFT;
                 score += 1;
 
+                // play the chop sound
+                chop.sound->play();
+
                 // Add to the amount of time remaining
                 timeRemaining += ((2/score) + .15);
 
@@ -259,8 +283,6 @@ int main(){
                 acceptInput = false;
             }
         }
-
-
 
         /*
             --------------------------------------------------
@@ -280,6 +302,9 @@ int main(){
             if(timeRemaining <= 0.0f){
                 // pause the game
                 paused = true;
+
+                // play the out of time sound
+                outOfTime.sound->play();
 
                 // Change the message shown to the player
                 messageText.setString("Out of time!!");
@@ -357,6 +382,7 @@ int main(){
                 // death, game will only start again when 'return' is pressed.
                 paused = true;
                 acceptInput = false;
+                death.sound->play();
                 
                 // Draw the gravestone
                 spriteGrave.setPosition({525, 760});

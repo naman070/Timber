@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -g -I D:/cpp_libraries/SFML-3.0.0/include
 
 # Linker flags (added -mwindows)
-LDFLAGS = -L D:/cpp_libraries/SFML-3.0.0/lib -lsfml-graphics -lsfml-window -lsfml-system -mwindows -lopengl32
+LDFLAGS = -L D:/cpp_libraries/SFML-3.0.0/lib -lsfml-graphics -lsfml-window -lsfml-system -mwindows -lopengl32 -lsfml-audio
 
 # Source files (all .cpp in current dir)
 SRC = $(wildcard *.cpp)
